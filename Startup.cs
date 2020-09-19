@@ -14,10 +14,21 @@ namespace web
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            //injeçao de dependencia ^
             // Deve ser implementado para que quando for solicitado esse serviço, seja criado a instancia do catalogo
-            services.AddTransient<ICatalogo, Catalogo>();
+            //services.AddTransient<ICatalogo, Catalogo>();
+            //services.AddTransient<IRelatorio, Relatorio>();
 
-            //injeçao d dependencia ^
+            //Gerando instancias utilizando o scoped(A cada vez que o browser for recarregado)
+            //services.AddScoped<ICatalogo, Catalogo>();
+            //services.AddScoped<IRelatorio, Relatorio>();
+
+
+            // Agora utilizando o Singleton...havera apenas uma unica instancia durente toda a execuçao da aplicação
+            var catalogo = new Catalogo();
+            services.AddSingleton<ICatalogo>(catalogo);
+            services.AddSingleton<IRelatorio>(new Relatorio(catalogo));
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
@@ -28,7 +39,7 @@ namespace web
             }
 
             ICatalogo catalogo = serviceProvider.GetService<ICatalogo>();
-            IRelatorio relatorio = new Relatorio(catalogo);
+            IRelatorio relatorio = serviceProvider.GetService<IRelatorio>();
 
             app.Run(async (context) =>
             {
