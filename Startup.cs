@@ -12,28 +12,27 @@ namespace web
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // Deve ser implementado para que quando for solicitado esse serviço, seja criado a instancia do catalogo
+            services.AddTransient<ICatalogo, Catalogo>();
+
+            //injeçao d dependencia ^
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting();
+            ICatalogo catalogo = serviceProvider.GetService<ICatalogo>();
+            IRelatorio relatorio = new Relatorio(catalogo);
 
-            app.UseEndpoints(endpoints =>
+            app.Run(async (context) =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                await relatorio.Imprimir(context);
             });
         }
     }
